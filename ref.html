@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Referral Download</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    #downloadBtn {
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    #downloadBtn.enabled {
+      cursor: pointer;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Your referral is ready!</h1>
+  <button id="downloadBtn" disabled>Preparing download…</button>
+
+  <script>
+    $(function(){
+      // 1. Read the referral code from the URL (?code=ABC123)
+      const params = new URLSearchParams(window.location.search);
+      const referralCode = params.get('code');
+      if (!referralCode) {
+        $('#downloadBtn').text('Download').prop('disabled', false).addClass('enabled');
+        return;
+      }
+
+      // 2. Call your backend to log the click and get a clickId
+      $.ajax({
+        url: "https:testbend.vhennus.com/create_ref_link/drakeob",
+        method: 'GET',
+        contentType: 'application/json',
+      })
+      .done(function(res) {
+        // res.clickId should be your generated UUID
+        console.log(res)
+        const clickId = res.data.click_id;
+        // Enable the button and wire up the download URL
+        $('#downloadBtn')
+          .text('Download APK')
+          .prop('disabled', false)
+          .addClass('enabled')
+          .on('click', function() {
+            window.location.href = 'https://testbend.vhennus.com/download/test_vhennus_1.1.apk?clickId=' + encodeURIComponent(clickId);
+          });
+      })
+      .fail(function() {
+        // Even if logging fails, let them download without clickId
+        $('#downloadBtn')
+          .text('Download APK')
+          .prop('disabled', false)
+          .addClass('enabled')
+          .on('click', function() {
+            window.location.href = '/download';
+          });
+      });
+    });
+  </script>
+</body>
+</html>
+
